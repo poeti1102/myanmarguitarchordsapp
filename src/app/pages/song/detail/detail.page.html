@@ -1,0 +1,14 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="song"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Song</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<div *ngIf="songLoaded">
+  <ion-img [src]="song.file"></ion-img>
+</div>
+</ion-content>

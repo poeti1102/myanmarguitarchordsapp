@@ -1,9 +1,25 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>author</ion-title>
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button>
+        <ion-menu-button></ion-menu-button>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Authors</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-searchbar inputmode="text" [(ngModel)]="searchString"  animated showCancelButton="focus" (search)="searchAuthor()"></ion-searchbar>
+  <ion-list lines=none>
+    <ion-item class="authors" *ngFor="let author of authors" (click)="toSongs(author.id)">
+      <ion-thumbnail slot="start">
+        <img src="../../../assets/images/author.png">
+      </ion-thumbnail>
+      <ion-label>
+        <h3>{{author.author_name_mm}}</h3>
+      </ion-label>
+    </ion-item>
 
+  </ion-list>
 </ion-content>

@@ -1,0 +1,6 @@
+{
+	"appId": "com.winxstudio.mmguitarchords",
+	"appName": "MyanmarGuitarChords",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}

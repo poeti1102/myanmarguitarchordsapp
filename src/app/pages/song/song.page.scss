@@ -1,6 +1,11 @@
 .songs {
     border-radius: 10px;
     margin: 5%;
-    box-shadow: black;
+    padding: 2% 0 2% 0;
     box-shadow: 0px 4px 6px -2px rgb(0 0 0 / 74%);
+}
+
+ion-content{ 
+    font-family:Pyidaungsu !important;
+    background-color: #fff;
 }

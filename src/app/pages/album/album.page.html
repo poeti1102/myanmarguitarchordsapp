@@ -1,9 +1,25 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>album</ion-title>
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button>
+        <ion-menu-button></ion-menu-button>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Albums</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <ion-searchbar inputmode="text" [(ngModel)]="searchString"  animated showCancelButton="focus" (search)="searchAlbum()"></ion-searchbar>
+  <ion-list lines=none>
+    <ion-item class="albums" *ngFor="let album of albums" (click)="toSongs(album.id)">
+      <ion-thumbnail slot="start">
+        <img src="../../../assets/images/album.png">
+      </ion-thumbnail>
+      <ion-label>
+        <h3>{{album.album_name_mm}}</h3>
+      </ion-label>
+    </ion-item>
 
+  </ion-list>
 </ion-content>

@@ -22,11 +22,29 @@ const routes: Routes = [
   },
   {
     path: 'author',
-    loadChildren: () => import('./pages/author/author.module').then( m => m.AuthorPageModule)
+    children: [
+      {
+        path: "",
+        loadChildren: () => import('./pages/author/author.module').then( m => m.AuthorPageModule)
+      },
+      {
+        path: "song/:authorId",
+        loadChildren: () => import('./pages/author/songs/songs.module').then( m => m.SongsPageModule),
+      }
+    ]
   },
   {
     path: 'album',
-    loadChildren: () => import('./pages/album/album.module').then( m => m.AlbumPageModule)
+    children: [
+      {
+        path: "",
+        loadChildren: () => import('./pages/album/album.module').then( m => m.AlbumPageModule)
+      },
+      {
+        path: "song/:albumId",
+        loadChildren: () => import('./pages/album/songs/songs.module').then( m => m.SongsPageModule),
+      }
+    ]
   },
   {
     path: 'popular',

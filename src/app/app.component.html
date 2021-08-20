@@ -5,10 +5,16 @@
         <ion-list id="inbox-list">
           <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">
             <ion-item routerDirection="root" [routerLink]="[p.url]" lines="none" detail="false" routerLinkActive="selected">
-              <ion-icon slot="start" [ios]="p.icon + '-outline'" [md]="p.icon + '-sharp'"></ion-icon>
+              <ion-icon slot="start" [ios]="p.icon" [md]="p.icon"></ion-icon>
               <ion-label>{{ p.title }}</ion-label>
             </ion-item>
           </ion-menu-toggle>
+        </ion-list>
+        <ion-list>
+          <ion-item lines=none detail="false" (click)="requestSong()">
+            <ion-icon slot="start" name="flag"></ion-icon>
+            <ion-label>Request Song</ion-label>
+          </ion-item>
         </ion-list>
       </ion-content>
     </ion-menu>

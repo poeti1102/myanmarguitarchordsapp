@@ -14,22 +14,34 @@ import {
 export class SongService {
   private songs: Song[] = [];
   private song: Song = null;
+  private _songCount : number = 1;
   private config: any = {
     headers: { Authorization: `Bearer ${API_KEY}` , 'Content-Type' : 'text/plain'}
   };
 
   constructor() {}
 
-  getSongs(): Song[] {
+  async getSongs(page = 1) {
     this.songs = [];
-    this.getSongList();
+    await this.getSongList(page);
     return this.songs;
   }
 
   async getSong(id) {
     this.song = null;
+    this._songCount++;
     await this.getsong(id);
     return this.song;
+  }
+
+  get songCount()
+  {
+    return this._songCount;
+  }
+
+  resetSongCount()
+  {
+    this._songCount = 1;
   }
 
   async searchSong(searchTerm) {
@@ -38,27 +50,28 @@ export class SongService {
     return this.songs;
   }
 
-  getPopular() {
+  async getPopular() {
     this.songs = [];
-    this.getPopularSongs();
+    await this.getPopularSongs();
     return this.songs;
   }
 
-  getNew() {
+  async getNew() {
     this.songs = [];
-    this.getNewSongs();
+    await this.getNewSongs();
     return this.songs;
   }
 
-  getByAuthor(authorId) {
+  async getByAuthor(authorId) {
     this.songs = [];
-    this.getSongsByAuthor(authorId);
+    await this.getSongsByAuthor(authorId);
     return this.songs;
   }
 
-  getByAlbum(albumId) {
+  async getByAlbum(albumId) {
     this.songs = [];
-    this.getSongsByAlbum(albumId);
+    await this.getSongsByAlbum(albumId);
+    
     return this.songs;
   }
 
@@ -79,11 +92,11 @@ export class SongService {
     });
   }
 
-  private getSongList() {
-    axios
-      .get(`${APP_URL}/songs/list`, this.config)
+  private async getSongList(page) {
+    await axios
+      .get(`${APP_URL}/songs/list?page=${page}`, this.config)
       .then((res) => {
-        if (res.data.data.length > 0) {
+        if (res.data.data) {
           this.addSongs(res.data.data);
         }
       })
@@ -136,44 +149,44 @@ export class SongService {
       .catch((err) => console.log(err));
   }
 
-  getPopularSongs() {
-    axios
+  private async getPopularSongs() {
+    await axios
       .get(`${APP_URL}/songs/getPopular`, this.config)
       .then((res) => {
-        if (res.data.data) {
+        if (res.data) {
           this.addSongs(res.data);
         }
       })
       .catch((err) => console.log(err));
   }
 
-  getNewSongs() {
-    axios
+  private async getNewSongs() {
+    await axios
       .get(`${APP_URL}/songs/getNewSongs`, this.config)
       .then((res) => {
-        if (res.data.data) {
+        if (res.data) {
           this.addSongs(res.data);
         }
       })
       .catch((err) => console.log(err));
   }
 
-  getSongsByAuthor(id) {
-    axios
+  async getSongsByAuthor(id) {
+    await axios
       .get(`${APP_URL}/songs/getSongsByAuthor/${id}`, this.config)
       .then((res) => {
-        if (res.data.data) {
+        if (res.data) {
           this.addSongs(res.data);
         }
       })
       .catch((err) => console.log(err));
   }
 
-  getSongsByAlbum(id) {
-    axios
+  async getSongsByAlbum(id) {
+    await axios
       .get(`${APP_URL}/songs/getSongsByAlbum/${id}`, this.config)
       .then((res) => {
-        if (res.data.data) {
+        if (res.data) {
           this.addSongs(res.data);
         }
       })

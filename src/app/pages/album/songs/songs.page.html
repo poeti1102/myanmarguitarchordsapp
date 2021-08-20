@@ -1,9 +1,22 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>songs</ion-title>
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="author"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Songs</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
+  <ion-list lines=none>
+    <ion-item class="songs" *ngFor="let song of songs" (click)="toDetail(song.id)">
+      <ion-thumbnail slot="start">
+        <img src="../../../assets/images/music.png">
+      </ion-thumbnail>
+      <ion-label>
+        <h3>{{song.song_name_mm}}</h3>
+        <p *ngIf="song.author !== null">{{song.author.author_name_mm}}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

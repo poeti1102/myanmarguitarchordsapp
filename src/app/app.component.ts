@@ -8,10 +8,11 @@ import { AdmobService } from './services/admob/admob.service';
 export class AppComponent {
   public appPages = [
     { title: 'Songs', url: '/song', icon: 'disc-sharp' },
-    { title: 'Authors', url: '/author', icon: 'people' },
+    { title: 'Singers', url: '/author', icon: 'people' },
     { title: 'Albums', url: '/album', icon: 'book' },
     { title: 'New Songs', url: '/new', icon: 'flame' },
     { title: 'Top Songs', url: '/popular', icon: 'flash' },
+    { title: 'Favorites', url: '/favorite', icon: 'heart' },
   ];
   constructor(private admobServ : AdmobService) {}
 

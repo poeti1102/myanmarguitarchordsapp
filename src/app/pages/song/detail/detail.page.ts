@@ -14,6 +14,8 @@ import { environment } from 'src/environments/environment';
 export class DetailPage implements OnInit {
   public song = null;
   public songLoaded: boolean;
+  public isFavorite: boolean = false;
+  private _id : string;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -24,17 +26,28 @@ export class DetailPage implements OnInit {
 
   ngOnInit() {
     this.admobServ.showBanner();
-    if (this.admobServ.isInterestialLoaded) {
-      this.showVideo();
-    } else {
-      this.prepareVideo();
-    }
 
-    let id = this.activatedRoute.snapshot.paramMap.get('id');
-    this.songServ.getSong(id).then((data) => {
+    this._id = this.activatedRoute.snapshot.paramMap.get('id');
+    this.songServ.getSong(this._id).then((data) => {
       this.song = data;
     });
+
+    if (this.admobServ.isInterestialLoaded) {
+      if (this.songServ.songCount > environment.songLimitForAds) {
+        this.showVideo();
+      }
+    } else {
+        this.prepareVideo();
+    }
+
     this.presentLoading();
+  }
+
+  ionViewWillEnter()
+  {
+    this.songServ.checkIsFavorite(this._id).then((data) => {
+      this.isFavorite = data;
+    })
   }
 
   async presentLoading() {
@@ -47,8 +60,7 @@ export class DetailPage implements OnInit {
 
     const { role, data } = await loading.onDidDismiss();
     if (this.song == null) {
-      let id = this.activatedRoute.snapshot.paramMap.get('id');
-      this.song = this.songServ.getSong(id);
+      this.song = this.songServ.getSong(this._id);
       this.presentLoading();
     } else {
       this.songLoaded = true;
@@ -57,20 +69,29 @@ export class DetailPage implements OnInit {
   }
 
   private prepareVideo() {
-    let songCount = this.songServ.songCount;
-    if (songCount > environment.songLimitForAds) {
-      this.admobServ.prepareShortVideo().then((res) => {
-        let status = this.admobServ.isInterestialLoaded;
-        if (status) {
-          this.showVideo();
-        }
-      });
-    }
+    this.admobServ.prepareShortVideo().then((res) => {
+      let status = this.admobServ.isInterestialLoaded;
+      if (status) {
+        this.showVideo();
+      }
+    });
   }
 
   private showVideo() {
     this.admobServ.showShortVideo();
     this.songServ.resetSongCount();
     this.admobServ.prepareShortVideo(); // Prepare Another One
+  }
+
+  public saveToFavorite()
+  {
+    this.songServ.saveToFavorite(this._id);
+    this.isFavorite = true;
+  }
+
+  public removeFromFavorite()
+  {
+    this.songServ.removeFromFavorite(this._id);
+    this.isFavorite = false;
   }
 }

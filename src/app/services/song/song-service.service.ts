@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Song } from 'src/app/models/song';
+import { Storage } from '@capacitor/storage';
 
 import axios from 'axios';
 import {
@@ -14,9 +15,16 @@ import {
 export class SongService {
   private songs: Song[] = [];
   private song: Song = null;
-  private _songCount : number = 1;
+  private _songCount: number = 0;
+  private _isFavorite: boolean = false;
+  private _favoriteSongs: Song[] = [];
+  private _favoriteList = [];
+
   private config: any = {
-    headers: { Authorization: `Bearer ${API_KEY}` , 'Content-Type' : 'text/plain'}
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      'Content-Type': 'text/plain',
+    },
   };
 
   constructor() {}
@@ -34,14 +42,12 @@ export class SongService {
     return this.song;
   }
 
-  get songCount()
-  {
+  get songCount() {
     return this._songCount;
   }
 
-  resetSongCount()
-  {
-    this._songCount = 1;
+  resetSongCount() {
+    this._songCount = 0;
   }
 
   async searchSong(searchTerm) {
@@ -71,7 +77,14 @@ export class SongService {
   async getByAlbum(albumId) {
     this.songs = [];
     await this.getSongsByAlbum(albumId);
-    
+
+    return this.songs;
+  }
+
+  async getFavorite() {
+    this.songs = [];
+    await this.getFavoriteSongs();
+
     return this.songs;
   }
 
@@ -103,7 +116,7 @@ export class SongService {
       .catch((err) => console.log(err));
   }
 
-  private getsong = async(id) : Promise<void> => {
+  private getsong = async (id): Promise<void> => {
     await axios
       .get(`${APP_URL}/songs/get/${id}`, this.config)
       .then((res) => {
@@ -123,23 +136,18 @@ export class SongService {
         }
       })
       .catch((err) => console.log(err));
-  }
+  };
 
   private async search(searchTerm) {
     let data = {
-      "searchTerm" : searchTerm
-    }
-    
+      searchTerm: searchTerm,
+    };
+
     await axios
-      .post(
-        `${APP_URL}/songs/search`,
-        data,
-        this.config
-      )
+      .post(`${APP_URL}/songs/search`, data, this.config)
       .then((res) => {
         if (res.data) {
-          if (res.data.data)
-          {
+          if (res.data.data) {
             this.addSongs(res.data.data);
           } else {
             this.addSongs(res.data);
@@ -192,4 +200,74 @@ export class SongService {
       })
       .catch((err) => console.log(err));
   }
+
+  async getFavoriteSongs() {
+    const favoriteList = await Storage.get({ key: 'favorite' });
+    let data = {
+      ids: JSON.parse(favoriteList.value),
+    };
+
+    await axios
+      .post(`${APP_URL}/songs/getFavorites`, data, this.config)
+      .then((res) => {
+        if (res.data) {
+          if (res.data.data) {
+            this.addSongs(res.data.data);
+          } else {
+            this.addSongs(res.data);
+          }
+        }
+      })
+      .catch((err) => console.log(err));
+  }
+
+  checkIsFavorite = async (id) => {
+    const favoriteList = await Storage.get({ key: 'favorite' });
+    if (favoriteList.value == null) {
+      this._isFavorite = false;
+    } else {
+      let list = JSON.parse(favoriteList.value);
+      console.log('check',list);
+      
+      this._isFavorite = list.includes(id);
+    }
+
+    return this._isFavorite;
+  };
+
+  saveToFavorite = async (id) => {
+    let data = [];
+    const favoriteList = await Storage.get({ key: 'favorite' });
+    if (favoriteList.value !== null) {
+      let list = JSON.parse(favoriteList.value);
+      list.push(id);
+      data = list;
+    } else {
+      data.push(id)
+    }
+
+    await Storage.set({
+      key: 'favorite',
+      value: JSON.stringify(data),
+    });
+  };
+
+  removeFromFavorite = async (id) => {
+    let data = [];
+    const favoriteList = await Storage.get({ key: 'favorite' });
+    console.log(favoriteList.value);
+    if (favoriteList.value !== null) {
+      data = JSON.parse(favoriteList.value);
+    }
+    
+    const newList = data.filter((songId) => {
+      return songId !== id
+    })
+    console.log(newList);
+    
+    await Storage.set({
+      key: 'favorite',
+      value: JSON.stringify(newList),
+    });
+  };
 }

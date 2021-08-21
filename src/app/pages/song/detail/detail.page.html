@@ -4,11 +4,20 @@
       <ion-back-button defaultHref="song"></ion-back-button>
     </ion-buttons>
     <ion-title>Song</ion-title>
+    <ion-buttons slot="primary">
+      <ion-button
+        (click)="isFavorite ? removeFromFavorite() : saveToFavorite()"
+      >
+        <ion-icon [name]="isFavorite ? 'heart' : 'heart-outline'"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-<div *ngIf="songLoaded">
-  <ion-img class="song" [src]="song.file"></ion-img>
-</div>
+<ion-content scrollX="true" scrollY="true">
+  <div *ngIf="songLoaded">
+    <pinch-zoom disableZoomControl="disable" backgroundColor="#fff">
+      <img class="song" [src]="song.file" />
+    </pinch-zoom>
+  </div>
 </ion-content>

@@ -17,7 +17,13 @@ import {
   providedIn: 'root',
 })
 export class AdmobService {
-  private _isInterestialLoaded : boolean = false;
+  private _isInterestialLoaded: boolean = false;
+
+  /**
+   * Height of AdSize
+   */
+  private appMargin = 0;
+
   constructor() {}
 
   initialize() {
@@ -33,8 +39,13 @@ export class AdmobService {
 
     AdMob.addListener(
       BannerAdPluginEvents.SizeChanged,
-      (size: AdMobBannerSize) => {
+      (size: any) => {
         // Subscribe Change Banner Size
+        this.appMargin = parseInt(size.height, 10);
+        if (this.appMargin > 0) {
+          const app: HTMLElement = document.querySelector('ion-router-outlet');
+          app.style.marginBottom = this.appMargin + 'px';
+        }
       }
     );
 
@@ -50,8 +61,7 @@ export class AdmobService {
   }
 
   async prepareShortVideo(): Promise<void> {
-    AdMob.addListener(InterstitialAdPluginEvents.Loaded, (info: AdLoadInfo) => {
-      this._isInterestialLoaded = true;
+    AdMob.addListener(InterstitialAdPluginEvents.Loaded, (info: AdLoadInfo) => { 
     });
 
     const options: AdOptions = {
@@ -60,15 +70,14 @@ export class AdmobService {
       // npa: true
     };
     await AdMob.prepareInterstitial(options);
+    this._isInterestialLoaded = true;
   }
 
-  showShortVideo()
-  {
+  showShortVideo() {
     AdMob.showInterstitial();
   }
 
-  get isInterestialLoaded()
-  {
+  get isInterestialLoaded() {
     return this._isInterestialLoaded;
   }
 }

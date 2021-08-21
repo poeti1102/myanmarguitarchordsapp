@@ -24,10 +24,15 @@ export class SongPage implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.canLoadMore = false;
+  }
+
+  ionViewWillEnter() {
     this.songServ.getSongs(this.page).then((data) => {
       this.songs = data;
+      this.canLoadMore = true;
     });
-    this.presentLoading();
+    this.presentLoading(500);
     this.admobServ.showBanner();
   }
 
@@ -48,17 +53,13 @@ export class SongPage implements OnInit {
   }
 
   async presentLoading(timer = 1000) {
+    
     const loading = await this.loadingCtrl.create({
       cssClass: 'loader',
       message: 'Loading...',
       duration: timer
     });
     await loading.present();
-
-    if(this.songs == [] || this.songs == null)
-    {
-      this.presentLoading(500);
-    }
 
     const { role, data } = await loading.onDidDismiss();
   } 

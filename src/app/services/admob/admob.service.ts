@@ -22,7 +22,8 @@ export class AdmobService {
   /**
    * Height of AdSize
    */
-  private appMargin = 0;
+   private appMargin = 0;
+   private bannerPosition: 'top' | 'bottom';
 
   constructor() {}
 
@@ -33,18 +34,35 @@ export class AdmobService {
   }
 
   async showBanner(): Promise<void> {
+    this.bannerPosition = 'bottom';
+    
     AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
       // Subscribe Banner Event Listener
     });
 
-    AdMob.addListener(
+    const resizeHandler = AdMob.addListener(
       BannerAdPluginEvents.SizeChanged,
-      (size: any) => {
-        // Subscribe Change Banner Size
-        this.appMargin = parseInt(size.height, 10);
+      (info: AdMobBannerSize) => {
+        this.appMargin = info.height;
+        const app: HTMLElement = document.querySelector('ion-router-outlet');
+
+        if (this.appMargin === 0) {
+          app.style.marginTop = '';
+          return;
+        }
+
         if (this.appMargin > 0) {
-          const app: HTMLElement = document.querySelector('ion-router-outlet');
-          app.style.marginBottom = this.appMargin + 'px';
+          const body = document.querySelector('body');
+          const bodyStyles = window.getComputedStyle(body);
+          const safeAreaBottom = bodyStyles.getPropertyValue(
+            '--ion-safe-area-bottom'
+          );
+
+          if (this.bannerPosition === 'top') {
+            app.style.marginTop = this.appMargin + 'px';
+          } else {
+            app.style.marginBottom = `calc(${safeAreaBottom} + ${this.appMargin}px)`;
+          }
         }
       }
     );
@@ -54,19 +72,21 @@ export class AdmobService {
       adSize: BannerAdSize.BANNER,
       position: BannerAdPosition.BOTTOM_CENTER,
       margin: 0,
-      isTesting: !environment.production,
+      isTesting: false,
       // npa: true
     };
     AdMob.showBanner(options);
   }
 
   async prepareShortVideo(): Promise<void> {
-    AdMob.addListener(InterstitialAdPluginEvents.Loaded, (info: AdLoadInfo) => { 
-    });
+    AdMob.addListener(
+      InterstitialAdPluginEvents.Loaded,
+      (info: AdLoadInfo) => {}
+    );
 
     const options: AdOptions = {
       adId: environment.interestialId,
-      isTesting: !environment.production,
+      isTesting: false,
       // npa: true
     };
     await AdMob.prepareInterstitial(options);

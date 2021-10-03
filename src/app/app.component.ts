@@ -17,7 +17,7 @@ export class AppComponent {
   constructor(private admobServ : AdmobService) {}
 
   public requestSong() {
-    window.open("http://m.me/linaung.82","_system");
+    window.open("http://m.me/mmguitarchords","_system");
   }
 
   ngOnInit() {

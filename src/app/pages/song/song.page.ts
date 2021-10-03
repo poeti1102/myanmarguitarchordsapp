@@ -28,6 +28,9 @@ export class SongPage implements OnInit {
   }
 
   ionViewWillEnter() {
+    // reset pagination ?
+    this.page = 1;
+    
     this.songServ.getSongs(this.page).then((data) => {
       this.songs = data;
       this.canLoadMore = true;

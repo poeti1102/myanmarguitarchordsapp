@@ -17,8 +17,6 @@ export class SongService {
   private song: Song = null;
   private _songCount: number = 0;
   private _isFavorite: boolean = false;
-  private _favoriteSongs: Song[] = [];
-  private _favoriteList = [];
 
   private config: any = {
     headers: {

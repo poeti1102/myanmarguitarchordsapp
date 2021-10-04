@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Component, NgZone } from '@angular/core';
 import { environment } from 'src/environments/environment';
+import { ReplaySubject } from 'rxjs';
 
 import {
   AdMob,
@@ -11,7 +12,10 @@ import {
   AdOptions,
   AdLoadInfo,
   InterstitialAdPluginEvents,
+  AdMobRewardItem,
+  RewardAdPluginEvents,
 } from '@capacitor-community/admob';
+import { PluginListenerHandle } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root',
@@ -19,13 +23,30 @@ import {
 export class AdmobService {
   private _isInterestialLoaded: boolean = false;
 
+  private readonly listenerHandlers: PluginListenerHandle[] = [];
+  private readonly lastBannerEvent$$ = new ReplaySubject<{
+    name: string;
+    value: any;
+  }>(1);
+  public readonly lastBannerEvent$ = this.lastBannerEvent$$.asObservable();
+
+  private readonly lastRewardEvent$$ = new ReplaySubject<{
+    name: string;
+    value: any;
+  }>(1);
+  public readonly lastRewardEvent$ = this.lastRewardEvent$$.asObservable();
+
   /**
    * Height of AdSize
    */
-   private appMargin = 0;
-   private bannerPosition: 'top' | 'bottom';
+  private appMargin = 0;
+  private bannerPosition: 'top' | 'bottom';
 
-  constructor() {}
+  public isPrepareReward = false;
+
+  public isLoading = false;
+
+  constructor(private readonly ngZone: NgZone) {}
 
   initialize() {
     AdMob.initialize({
@@ -33,13 +54,39 @@ export class AdmobService {
     });
   }
 
-  async showBanner(): Promise<void> {
-    this.bannerPosition = 'bottom';
-    
-    AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
-      // Subscribe Banner Event Listener
-    });
+  private registerRewardListeners(): void {
+    const eventKeys = Object.keys(RewardAdPluginEvents);
 
+    eventKeys.forEach((key) => {
+      console.log(`registering ${RewardAdPluginEvents[key]}`);
+      const handler = AdMob.addListener(RewardAdPluginEvents[key], (value) => {
+        console.log(`Reward Event "${key}"`, value);
+
+        this.ngZone.run(() => {
+          this.lastRewardEvent$$.next({ name: key, value: value });
+        });
+      });
+      this.listenerHandlers.push(handler);
+    });
+  }
+
+  private registerBannerListeners(): void {
+    const eventKeys = Object.keys(BannerAdPluginEvents);
+
+    eventKeys.forEach((key) => {
+      console.log(`registering ${BannerAdPluginEvents[key]}`);
+      const handler = AdMob.addListener(BannerAdPluginEvents[key], (value) => {
+        console.log(`Banner Event "${key}"`, value);
+
+        this.ngZone.run(() => {
+          this.lastBannerEvent$$.next({ name: key, value: value });
+        });
+      });
+      this.listenerHandlers.push(handler);
+    });
+  }
+
+  private listenBannerChangeSize() {
     const resizeHandler = AdMob.addListener(
       BannerAdPluginEvents.SizeChanged,
       (info: AdMobBannerSize) => {
@@ -67,6 +114,14 @@ export class AdmobService {
       }
     );
 
+    this.listenerHandlers.push(resizeHandler);
+
+    this.registerBannerListeners();
+  }
+
+  async showBanner(): Promise<void> {
+    this.bannerPosition = 'bottom';
+    this.listenBannerChangeSize();
     const options: BannerAdOptions = {
       adId: environment.admobId,
       adSize: BannerAdSize.BANNER,
@@ -75,7 +130,17 @@ export class AdmobService {
       isTesting: false,
       // npa: true
     };
-    AdMob.showBanner(options);
+
+    const bannerOptions: BannerAdOptions = { ...options };
+    console.log('Requesting banner with this options', bannerOptions);
+
+    const result = await AdMob.showBanner(bannerOptions).catch((e) =>
+      console.error(e)
+    );
+
+    if (result === undefined) {
+      return;
+    }
   }
 
   async prepareShortVideo(): Promise<void> {
@@ -99,5 +164,37 @@ export class AdmobService {
 
   get isInterestialLoaded() {
     return this._isInterestialLoaded;
+  }
+
+  /**
+   * ==================== REWARD ====================
+   */
+  async prepareReward() {
+
+    this.registerRewardListeners();
+    const rewardOptions = {
+      adId: environment.rewardInterestialId,
+    };
+
+    try {
+      const result = await AdMob.prepareRewardVideoAd(rewardOptions);
+      console.log('Reward prepared', result);
+      this.isPrepareReward = true;
+    } catch (e) {
+      console.error('There was a problem preparing the reward', e);
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async showReward() {
+    const result: AdMobRewardItem = await AdMob.showRewardVideoAd().catch(
+      (e) => undefined
+    );
+    if (result === undefined) {
+      return;
+    }
+
+    this.isPrepareReward = false;
   }
 }

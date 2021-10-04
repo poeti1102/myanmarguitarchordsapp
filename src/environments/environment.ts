@@ -7,7 +7,9 @@ export const environment = {
   admobId : "ca-app-pub-2749896884178995~1941306162",
   bannerId: "ca-app-pub-2749896884178995/3972094207",
   interestialId : "ca-app-pub-2749896884178995/3529720005",
+  rewardInterestialId : "ca-app-pub-2749896884178995/3314050825",
   songLimitForAds : 2,
+  songLimitForReward : 4,
 };
 
 // export const API_KEY = "KvRfIc87eapzhBtGY2v84yR1Tv26ILMD";

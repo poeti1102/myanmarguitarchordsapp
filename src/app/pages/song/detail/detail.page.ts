@@ -32,13 +32,27 @@ export class DetailPage implements OnInit {
       this.song = data;
     });
 
+    if (this.admobServ.isPrepareReward) {
+      if (this.songServ.songCount >= environment.songLimitForReward) {
+        this.admobServ.showReward();
+        this.songServ.resetSongCount();
+      }
+    } else {
+      this.admobServ.prepareReward();
+    }
+
+
     if (this.admobServ.isInterestialLoaded) {
-      if (this.songServ.songCount > environment.songLimitForAds) {
-        this.showVideo();
+      if (this.songServ.songCount >= environment.songLimitForAds) {
+        if (this.songServ.songCount !== environment.songLimitForReward) {
+          this.showVideo();
+        }
       }
     } else {
         this.prepareVideo();
     }
+
+    
 
     this.presentLoading();
   }
